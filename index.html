@@ -1,0 +1,1090 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth bg-slate-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CUPISSA - Catálogo</title>
+    
+    <link rel="shortcut icon" href="images/favicon.png" type="image/png">
+    <link rel="icon" href="images/favicon.png" type="image/png">
+    <link rel="apple-touch-icon" href="images/favicon.png">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#fdf4ff',
+                            100: '#fae8ff',
+                            200: '#f5d0fe',
+                            300: '#f0abfc',
+                            400: '#e879f9',
+                            500: '#db2777',
+                            600: '#be185d',
+                            700: '#9d174d',
+                            800: '#831843',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Supabase JS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- Contenedor dinámico para Datos Estructurados (SEO Google Images) -->
+    <script id="seo-schema-script" type="application/ld+json"></script>
+
+    <style>
+        .fuchsia-btn { background-color: #db2777; color: white; }
+        .fuchsia-btn:hover { background-color: #be185d; }
+        .fuchsia-bg { background-color: #db2777; }
+        .fuchsia-text { color: #db2777; }
+        .fuchsia-border { border-color: #db2777; }
+        .custom-scrollbar::-webkit-scrollbar { height: 4px; width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #f0abfc; border-radius: 9999px; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col bg-slate-50 text-slate-800 font-sans">
+
+    <!-- HEADER / NAV -->
+    <header class="bg-white border-b border-slate-100 sticky top-0 z-40 shadow-sm">
+        <div class="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16 sm:h-20 gap-1.5 sm:gap-4">
+                
+                <!-- LOGO -->
+                <div class="flex items-center shrink-0">
+                    <a href="catalogo.html">
+                        <img src="images/logo.png" alt="CUPISSA - Catálogo de productos" class="h-8 sm:h-12 w-auto object-contain">
+                    </a>
+                </div>
+
+                <!-- BUSCADOR INTELIGENTE (OPTIMIZADO Y SIEMPRE VISIBLE EN CELULARES) -->
+                <div class="flex-1 max-w-xl mx-1 sm:mx-6">
+                    <div class="relative w-full">
+                        <span class="absolute inset-y-0 left-0 pl-2.5 sm:pl-3.5 flex items-center text-pink-600 text-xs sm:text-sm">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                        </span>
+                        <input type="text" id="smart-search-input" onkeyup="handleSmartSearch()" placeholder="Buscar producto..." class="w-full pl-8 sm:pl-10 pr-2.5 sm:pr-4 py-1.5 sm:py-2.5 rounded-full bg-slate-50 sm:bg-slate-100 border border-pink-300 sm:border-slate-200 text-slate-900 text-[11px] sm:text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 font-semibold placeholder-slate-400 transition-all shadow-xs">
+                    </div>
+                </div>
+
+                <!-- BOTONES RÁPIDOS Y ACCIONES -->
+                <div class="flex items-center space-x-1 sm:space-x-4 shrink-0">
+                    <!-- FAVORITOS -->
+                    <button onclick="openFavoritesModal()" class="relative p-1.5 sm:p-2.5 text-slate-600 hover:text-pink-600 transition-colors">
+                        <i class="fa-regular fa-heart text-lg sm:text-xl"></i>
+                        <span id="fav-badge-count" class="absolute -top-1 -right-1 bg-pink-600 text-white text-[9px] sm:text-[10px] font-black w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center shadow-sm">0</span>
+                    </button>
+
+                    <!-- CARRITO -->
+                    <button onclick="openCartModal()" class="relative p-1.5 sm:p-2.5 text-slate-600 hover:text-pink-600 transition-colors">
+                        <i class="fa-solid fa-bag-shopping text-lg sm:text-xl"></i>
+                        <span id="cart-badge-count" class="absolute -top-1 -right-1 bg-pink-600 text-white text-[9px] sm:text-[10px] font-black w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center shadow-sm">0</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- ZONA DE MUNDOS, TEMPORADAS, CATEGORÍAS Y SUBCATEGORÍAS -->
+    <div class="sticky top-16 sm:top-20 z-30 bg-slate-50/95 backdrop-blur-md pt-2 sm:pt-3 pb-1 sm:pb-2 border-b border-slate-200/60 shadow-xs">
+        <div class="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 space-y-2 sm:space-y-3">
+            <div class="bg-white rounded-xl sm:rounded-2xl p-2.5 sm:p-4 shadow-sm border border-slate-100 space-y-2 sm:space-y-3">
+                
+                <!-- LISTA DE MUNDOS -->
+                <div class="flex items-center space-x-1.5 sm:space-x-2 overflow-x-auto custom-scrollbar pb-1.5 border-b border-slate-100" id="mundos-container">
+                    <button onclick="filterByMundo('TODOS')" id="btn-mundo-todos" class="px-2.5 py-1 sm:px-4 sm:py-2 rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-wider transition-all bg-pink-600 text-white flex items-center space-x-1.5 shrink-0 shadow-sm">
+                        <i class="fa-solid fa-border-all text-[9px] sm:text-xs"></i>
+                        <span>TODOS LOS MUNDOS</span>
+                    </button>
+                </div>
+
+                <!-- ELEGIR TEMPORADA -->
+                <div class="flex items-center gap-1.5 text-[10px] sm:text-xs">
+                    <span class="font-bold text-slate-500 uppercase tracking-wider shrink-0 text-[9px] sm:text-xs">Temp:</span>
+                    <div class="flex items-center space-x-1.5 overflow-x-auto custom-scrollbar" id="temporadas-container">
+                        <button onclick="filterByTemporada('TODAS')" id="btn-temp-todas" class="px-2 py-1 sm:px-3 sm:py-1.5 rounded-md sm:rounded-lg font-bold text-white bg-pink-600 transition-all shrink-0">
+                            Todas
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ELEGIR CATEGORÍA -->
+                <div class="flex items-center gap-1.5 text-[10px] sm:text-xs pt-1 border-t border-slate-100">
+                    <span class="font-bold text-slate-500 uppercase tracking-wider shrink-0 text-[9px] sm:text-xs">Cat:</span>
+                    <div class="flex items-center space-x-1.5 overflow-x-auto custom-scrollbar" id="categorias-container">
+                        <button onclick="filterByCategoria('TODAS')" id="btn-cat-todas" class="px-2 py-1 sm:px-3 sm:py-1.5 rounded-md sm:rounded-lg font-bold text-white bg-pink-600 transition-all shrink-0">
+                            Todas
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ELEGIR SUBCATEGORÍA -->
+                <div class="flex items-center gap-1.5 text-[10px] sm:text-xs pt-1 border-t border-slate-100">
+                    <span class="font-bold text-slate-500 uppercase tracking-wider shrink-0 text-[9px] sm:text-xs">Subcat:</span>
+                    <div class="flex items-center space-x-1.5 overflow-x-auto custom-scrollbar" id="subcategorias-container">
+                        <button onclick="filterBySubcategoria('TODAS')" id="btn-subcat-todas" class="px-2 py-1 sm:px-3 sm:py-1.5 rounded-md sm:rounded-lg font-bold text-white bg-pink-600 transition-all shrink-0">
+                            Todas
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
+
+        <div class="flex items-center justify-between">
+            <h1 class="text-lg sm:text-2xl font-black text-slate-900 tracking-tight">
+                Catálogo Cupissa
+            </h1>
+        </div>
+
+        <!-- GRILLA DE PRODUCTOS -->
+        <div id="products-grid" class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5 sm:gap-6">
+            <div class="col-span-full py-16 text-center text-slate-500 font-bold flex flex-col items-center justify-center space-y-3">
+                <i class="fa-solid fa-circle-notch fa-spin text-pink-600 text-3xl"></i>
+                <span class="tracking-wider uppercase text-xs sm:text-sm">CARGANDO PRODUCTOS...</span>
+            </div>
+        </div>
+
+        <!-- ESTADO DE SCROLL INFINITO -->
+        <div id="scroll-status-container" class="py-6 text-center hidden">
+            <div id="scroll-loading-msg" class="hidden flex items-center justify-center space-x-2 text-pink-600 font-black text-xs sm:text-sm uppercase tracking-wider">
+                <i class="fa-solid fa-spinner fa-spin"></i>
+                <span>CARGANDO MÁS PRODUCTOS...</span>
+            </div>
+            <div id="scroll-end-msg" class="hidden text-slate-400 font-black text-xs sm:text-sm uppercase tracking-wider py-2">
+                <i class="fa-solid fa-check-circle mr-1 text-slate-300"></i> HAS LLEGADO AL FINAL
+            </div>
+        </div>
+
+    </main>
+
+    <!-- MODAL 1: OPCIONES PRODUCTO -->
+    <div id="modal-product-options" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-3xl max-w-2xl w-full p-6 shadow-2xl border border-slate-100 space-y-5 max-h-[90vh] overflow-y-auto custom-scrollbar relative">
+            <button onclick="closeOptionsModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-100 text-slate-400 hover:text-slate-600 hover:bg-slate-200 flex items-center justify-center transition-all z-10">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-3">
+                    <div class="relative rounded-2xl overflow-hidden bg-slate-100 aspect-square border border-slate-100 group">
+                        <img id="opt-modal-img" src="" alt="Producto Cupissa" class="w-full h-full object-cover">
+                        <div class="absolute top-3 left-3 flex flex-wrap gap-1" id="opt-modal-badges"></div>
+                        <button onclick="openFullImageModal()" class="absolute bottom-3 right-3 px-3 py-1.5 bg-slate-900/80 hover:bg-slate-900 text-white rounded-xl text-[11px] font-bold backdrop-blur-md shadow-md transition-all flex items-center space-x-1.5 z-10">
+                            <i class="fa-solid fa-expand text-xs"></i>
+                            <span>Ver foto completa</span>
+                        </button>
+                    </div>
+                    <div class="flex items-center space-x-2 overflow-x-auto custom-scrollbar pb-1" id="opt-modal-thumbs"></div>
+                </div>
+                <div class="space-y-4 flex flex-col justify-between">
+                    <div>
+                        <span id="opt-modal-subcat" class="text-[11px] font-black uppercase text-pink-600 tracking-wider">TEXTIL</span>
+                        <h2 id="opt-modal-title" class="text-xl font-black text-slate-900 uppercase tracking-tight mt-0.5">NOMBRE PRODUCTO</h2>
+                        <span id="opt-modal-ref" class="text-[10px] text-slate-400 font-bold block mt-0.5">Ref: CUP-0000</span>
+
+                        <div id="wrapper-descripcion" class="mt-2 text-xs text-slate-600 bg-slate-50 p-3 rounded-xl border border-slate-100 leading-relaxed hidden">
+                            <p id="opt-modal-desc"></p>
+                        </div>
+
+                        <div id="wrapper-modalidad" class="mt-3 space-y-1">
+                            <label class="block text-xs font-bold text-slate-700 uppercase">Modalidad *</label>
+                            <div class="grid grid-cols-2 gap-2" id="modalidad-options-container">
+                                <label id="lbl-mod-venta" class="flex items-center justify-center space-x-2 p-2.5 rounded-xl border-2 fuchsia-border bg-pink-50/20 cursor-pointer text-xs font-bold fuchsia-text">
+                                    <input type="radio" name="modalidadProd" value="venta" checked onchange="setModalidad('venta')" class="accent-pink-600">
+                                    <span>Compra / Venta</span>
+                                </label>
+                                <label id="lbl-mod-alquiler" class="flex items-center justify-center space-x-2 p-2.5 rounded-xl border-2 border-slate-200 bg-white cursor-pointer text-xs font-bold text-slate-600">
+                                    <input type="radio" name="modalidadProd" value="alquiler" onchange="setModalidad('alquiler')" class="accent-pink-600">
+                                    <span>Alquiler</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div id="wrapper-tallas" class="mt-3 space-y-1 hidden">
+                            <label class="block text-xs font-bold text-slate-700 uppercase">Seleccionar Talla *</label>
+                            <select id="opt-select-talla" onchange="recalculateProductPrice()" class="w-full border border-slate-200 bg-slate-50/50 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 focus:ring-2 focus:ring-pink-500 focus:outline-none"></select>
+                        </div>
+
+                        <div id="wrapper-colores" class="mt-3 space-y-1 hidden">
+                            <label class="block text-xs font-bold text-slate-700 uppercase">Seleccionar Color *</label>
+                            <select id="opt-select-color" onchange="recalculateProductPrice()" class="w-full border border-slate-200 bg-slate-50/50 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 focus:ring-2 focus:ring-pink-500 focus:outline-none"></select>
+                        </div>
+
+                        <div id="wrapper-custom" class="mt-3 space-y-1 hidden">
+                            <label class="block text-xs font-bold text-slate-700 uppercase">Personalización</label>
+                            <input type="text" id="opt-input-custom" placeholder="Texto o datos personalizados" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium">
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-50 border border-slate-100 rounded-2xl p-4 space-y-3 mt-3">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-2">
+                                <span class="text-xs font-bold text-slate-700 uppercase">Cantidad:</span>
+                                <div class="flex items-center border border-slate-200 bg-white rounded-xl overflow-hidden">
+                                    <button onclick="updateModalQty(-1)" class="px-3 py-1 font-extrabold text-slate-600 hover:bg-slate-100 text-sm">-</button>
+                                    <span id="opt-modal-qty" class="px-3 text-xs font-black">1</span>
+                                    <button onclick="updateModalQty(1)" class="px-3 py-1 font-extrabold text-slate-600 hover:bg-slate-100 text-sm">+</button>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <span id="opt-price-tag" class="text-[10px] font-bold text-pink-600 uppercase block">Precio Detal</span>
+                                <span id="opt-modal-total-price" class="text-xl font-black text-slate-900">$ 0</span>
+                            </div>
+                        </div>
+
+                        <div id="wrapper-deposito-info" class="hidden text-[11px] font-bold text-amber-700 bg-amber-50 p-2 rounded-xl">
+                            Depósito reembolsable: <strong id="opt-val-deposito">$ 0</strong>
+                        </div>
+
+                        <div id="wrapper-anticipo" class="pt-2 border-t border-slate-200/60 flex items-center justify-between text-xs font-bold">
+                            <span class="text-slate-500">Anticipo Requerido (<span id="opt-anticipo-pct">20</span>%):</span>
+                            <span id="opt-anticipo-val" class="fuchsia-text font-black text-sm">$ 0</span>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center space-x-3 mt-3">
+                        <button onclick="toggleFavoriteCurrent()" id="btn-modal-fav" class="w-12 h-12 rounded-2xl bg-slate-100 text-slate-500 flex items-center justify-center hover:bg-pink-50 hover:text-pink-600 transition-colors">
+                            <i class="fa-regular fa-heart text-xl"></i>
+                        </button>
+                        <button onclick="addModalProductToCart()" class="flex-1 py-3.5 fuchsia-btn font-extrabold rounded-2xl shadow-lg transition-all text-xs flex items-center justify-center space-x-2">
+                            <i class="fa-solid fa-bag-shopping"></i>
+                            <span>Agregar al Carrito</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL FOTO COMPLETA -->
+    <div id="modal-full-image" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-[70] flex items-center justify-center hidden p-4">
+        <div class="relative max-w-4xl max-h-[90vh] w-full flex items-center justify-center">
+            <button onclick="closeFullImageModal()" class="absolute -top-12 right-0 text-white hover:text-pink-400 text-2xl font-bold flex items-center space-x-2 transition-colors">
+                <span>Cerrar</span>
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <img id="full-modal-img" src="" alt="Foto completa del producto" class="max-h-[85vh] max-w-full object-contain rounded-2xl shadow-2xl">
+        </div>
+    </div>
+
+    <!-- MODAL CARRITO -->
+    <div id="modal-cart" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-end hidden">
+        <div class="bg-white h-full max-w-md w-full p-6 shadow-2xl flex flex-col justify-between space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+                <h3 class="font-black text-slate-900 text-base flex items-center space-x-2">
+                    <i class="fa-solid fa-bag-shopping text-pink-600"></i>
+                    <span>Tu Carrito</span>
+                </h3>
+                <button onclick="closeCartModal()" class="text-slate-400 hover:text-slate-600">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            
+            <div id="cart-items-container" class="flex-1 overflow-y-auto custom-scrollbar space-y-3"></div>
+
+            <div class="space-y-3 border-t border-slate-100 pt-4">
+                <div class="flex items-center justify-between text-xs">
+                    <span class="font-bold text-slate-500">Total Anticipo Sugerido:</span>
+                    <span id="cart-total-anticipo" class="font-black text-pink-600 text-sm">$ 0</span>
+                </div>
+                <div class="flex items-center justify-between text-sm">
+                    <span class="font-black text-slate-900">Total Carrito:</span>
+                    <span id="cart-total-amount" class="font-black text-slate-900 text-base">$ 0</span>
+                </div>
+
+                <!-- Nota solicitada en reemplazo del botón de compra -->
+                <div class="bg-pink-50 border border-pink-200 text-pink-800 text-xs font-bold p-3 rounded-xl text-center leading-relaxed">
+                    Toma captura de producto y pasale al asesor para confirmar tu pedido.
+                </div>
+
+                <button onclick="closeCartModal()" class="w-full py-3 bg-slate-100 text-slate-700 font-bold rounded-xl text-xs">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL FAVORITOS -->
+    <div id="modal-favorites" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-end hidden">
+        <div class="bg-white h-full max-w-md w-full p-6 shadow-2xl flex flex-col justify-between space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+                <h3 class="font-black text-slate-900 text-base flex items-center space-x-2">
+                    <i class="fa-solid fa-heart text-pink-600"></i>
+                    <span>Tus Favoritos</span>
+                </h3>
+                <button onclick="closeFavoritesModal()" class="text-slate-400 hover:text-slate-600">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <div id="favorites-items-container" class="flex-1 overflow-y-auto custom-scrollbar space-y-3"></div>
+            <button onclick="closeFavoritesModal()" class="w-full py-3 bg-slate-100 text-slate-700 font-bold rounded-xl text-xs">Cerrar</button>
+        </div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://lkdxtesgwqoizobxaawp.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxrZHh0ZXNnd3FvaXpvYnhhYXdwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIwODMxNjIsImV4cCI6MjEwNzY1OTE2Mn0.rDQ8n8O6I9uHY6z4goQCTFfRjE8zExkifIRWFbBLycE';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let rawProducts = [];
+        let filteredProducts = [];
+        let displayLimit = 12;
+        let isLoadingMore = false;
+        let activeMundo = 'TODOS';
+        let activeTemporada = 'TODAS';
+        let activeCategoria = 'TODAS';
+        let activeSubcategoria = 'TODAS';
+        let cart = JSON.parse(localStorage.getItem('cupissa_cart') || '[]');
+        let favorites = JSON.parse(localStorage.getItem('cupissa_favs') || '[]');
+
+        let selectedProductModal = null;
+        let selectedQtyModal = 1;
+        let selectedModalidad = 'venta';
+        let activePhotoIndex = 0;
+
+        window.onload = function() {
+            updateBadges();
+            fetchCatalogProducts();
+
+            window.addEventListener('scroll', () => {
+                if (isLoadingMore) return;
+                
+                const footerHeight = document.querySelector('footer') ? document.querySelector('footer').offsetHeight : 0;
+                const triggerPoint = document.body.offsetHeight - footerHeight - 350;
+
+                if ((window.innerHeight + window.scrollY) >= triggerPoint) {
+                    if (displayLimit < filteredProducts.length) {
+                        isLoadingMore = true;
+                        
+                        const statusContainer = document.getElementById('scroll-status-container');
+                        const loadingMsg = document.getElementById('scroll-loading-msg');
+                        const endMsg = document.getElementById('scroll-end-msg');
+
+                        statusContainer.classList.remove('hidden');
+                        loadingMsg.classList.remove('hidden');
+                        endMsg.classList.add('hidden');
+
+                        setTimeout(() => {
+                            displayLimit += 12;
+                            renderProductsGrid();
+                            isLoadingMore = false;
+                        }, 200);
+                    }
+                }
+            });
+        };
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        async function fetchCatalogProducts() {
+            let allFetched = [];
+
+            try {
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/productos?select=*`, {
+                    headers: {
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                    }
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data && Array.isArray(data)) {
+                        allFetched = data;
+                    }
+                }
+            } catch (err) {
+                console.error("Excepción en fetch Supabase:", err);
+            }
+
+            rawProducts = allFetched.map(normalizeProduct);
+            rawProducts = shuffleArray(rawProducts);
+
+            renderFilters();
+            applyFiltersAndSearch();
+            updateSEOStructuredData();
+        }
+
+        function normalizeProduct(p) {
+            let fotosParsed = [];
+            if (p.fotos) {
+                if (Array.isArray(p.fotos)) fotosParsed = p.fotos;
+                else if (typeof p.fotos === 'string') {
+                    try { fotosParsed = JSON.parse(p.fotos); } catch(e) { fotosParsed = [p.fotos]; }
+                }
+            }
+            if (fotosParsed.length === 0) {
+                fotosParsed = ['https://via.placeholder.com/400x400?text=Cupissa'];
+            }
+
+            return {
+                id: p.id || 'p_' + Math.random().toString(36).substr(2, 9),
+                nombre: (p.nombre || p.title || 'Producto Sin Nombre').toString(),
+                descripcion: (p.descripcion || p.description || '').toString(),
+                mundo: (p.mundo || 'GENERAL').toString().trim().toUpperCase(),
+                categoria: (p.categoria || 'GENERAL').toString().trim().toUpperCase(),
+                subcategoria: (p.subcategoria || '').toString().trim().toUpperCase(),
+                temporada: (p.temporada || '').toString().trim().toUpperCase(),
+                precio_detal: parseFloat(p.precio_detal || p.precio || p.price || 0),
+                precio_mayorista: parseFloat(p.precio_mayorista || 0),
+                precio_alquiler: parseFloat(p.precio_alquiler || 0),
+                valor_deposito: parseFloat(p.valor_deposito || 0),
+                cant_min_mayorista: parseInt(p.cant_min_mayorista || 6),
+                porcentaje_anticipo: parseFloat(p.porcentaje_anticipo || 20),
+                dias_preparacion: parseInt(p.dias_preparacion || 0),
+                personalizable: !!p.personalizable,
+                alquiler: !!p.alquiler,
+                venta: p.venta !== undefined ? !!p.venta : true,
+                fotos: fotosParsed,
+                fotos_originales: p.fotos_originales || fotosParsed,
+                tallas: p.tallas || [],
+                colores: p.colores || []
+            };
+        }
+
+        function updateSEOStructuredData() {
+            if (!rawProducts || rawProducts.length === 0) return;
+            
+            const schemaData = rawProducts.slice(0, 30).map(p => ({
+                "@context": "https://schema.org/",
+                "@type": "Product",
+                "name": p.nombre,
+                "image": p.fotos,
+                "description": p.descripcion || `${p.nombre} - Producto CUPISSA Colombia`,
+                "brand": {
+                    "@type": "Brand",
+                    "name": "CUPISSA"
+                },
+                "offers": {
+                    "@type": "Offer",
+                    "priceCurrency": "COP",
+                    "price": p.precio_detal,
+                    "availability": "https://schema.org/InStock"
+                }
+            }));
+
+            const scriptElem = document.getElementById('seo-schema-script');
+            if (scriptElem) {
+                scriptElem.textContent = JSON.stringify(schemaData);
+            }
+        }
+
+        function renderFilters() {
+            const mundosSet = new Set();
+            const temporadasSet = new Set();
+            const categoriasSet = new Set();
+            const subcategoriasSet = new Set();
+
+            rawProducts.forEach(p => {
+                if (p.mundo) mundosSet.add(p.mundo);
+                if (p.temporada) temporadasSet.add(p.temporada);
+                if (p.categoria) categoriasSet.add(p.categoria);
+                if (p.subcategoria) subcategoriasSet.add(p.subcategoria);
+            });
+
+            const mundosContainer = document.getElementById('mundos-container');
+            const btnTodos = document.getElementById('btn-mundo-todos');
+            mundosContainer.innerHTML = '';
+            mundosContainer.appendChild(btnTodos);
+
+            Array.from(mundosSet).sort().forEach(mundo => {
+                const btn = document.createElement('button');
+                btn.onclick = () => filterByMundo(mundo);
+                btn.id = `btn-mundo-${mundo}`;
+                btn.className = "px-2.5 py-1 sm:px-4 sm:py-2 rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-600 bg-slate-100 hover:bg-slate-200 transition-all shrink-0 flex items-center space-x-1 sm:space-x-1.5";
+                btn.innerHTML = `<i class="fa-solid fa-folder text-[9px] sm:text-[10px] text-pink-500"></i><span>Mundo ${mundo}</span>`;
+                mundosContainer.appendChild(btn);
+            });
+
+            const tempContainer = document.getElementById('temporadas-container');
+            const btnTodasTemp = document.getElementById('btn-temp-todas');
+            tempContainer.innerHTML = '';
+            tempContainer.appendChild(btnTodasTemp);
+
+            Array.from(temporadasSet).sort().forEach(temp => {
+                const btn = document.createElement('button');
+                btn.onclick = () => filterByTemporada(temp);
+                btn.id = `btn-temp-${temp}`;
+                btn.className = "px-2 py-1 sm:px-3 sm:py-1.5 rounded-md sm:rounded-lg font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-all shrink-0";
+                btn.innerText = temp;
+                tempContainer.appendChild(btn);
+            });
+
+            const catContainer = document.getElementById('categorias-container');
+            const btnTodasCat = document.getElementById('btn-cat-todas');
+            catContainer.innerHTML = '';
+            catContainer.appendChild(btnTodasCat);
+
+            Array.from(categoriasSet).sort().forEach(cat => {
+                const btn = document.createElement('button');
+                btn.onclick = () => filterByCategoria(cat);
+                btn.id = `btn-cat-${cat}`;
+                btn.className = "px-2 py-1 sm:px-3 sm:py-1.5 rounded-md sm:rounded-lg font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-all shrink-0";
+                btn.innerText = cat;
+                catContainer.appendChild(btn);
+            });
+
+            const subcatContainer = document.getElementById('subcategorias-container');
+            const btnTodasSubcat = document.getElementById('btn-subcat-todas');
+            subcatContainer.innerHTML = '';
+            subcatContainer.appendChild(btnTodasSubcat);
+
+            Array.from(subcategoriasSet).sort().forEach(subcat => {
+                const btn = document.createElement('button');
+                btn.onclick = () => filterBySubcategoria(subcat);
+                btn.id = `btn-subcat-${subcat}`;
+                btn.className = "px-2 py-1 sm:px-3 sm:py-1.5 rounded-md sm:rounded-lg font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-all shrink-0";
+                btn.innerText = subcat;
+                subcatContainer.appendChild(btn);
+            });
+        }
+
+        function filterByMundo(mundo) {
+            activeMundo = mundo;
+            document.querySelectorAll('[id^="btn-mundo-"]').forEach(btn => {
+                btn.className = "px-2.5 py-1 sm:px-4 sm:py-2 rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-600 bg-slate-100 hover:bg-slate-200 transition-all shrink-0 flex items-center space-x-1 sm:space-x-1.5";
+            });
+            const activeBtn = document.getElementById(`btn-mundo-${mundo.toString().toLowerCase() === 'todos' ? 'todos' : mundo}`);
+            if (activeBtn) activeBtn.className = "px-2.5 py-1 sm:px-4 sm:py-2 rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-wider transition-all bg-pink-600 text-white flex items-center space-x-1 sm:space-x-2 shrink-0 shadow-sm";
+            
+            displayLimit = 12;
+            applyFiltersAndSearch();
+        }
+
+        function filterByTemporada(temp) {
+            activeTemporada = temp;
+            document.querySelectorAll('[id^="btn-temp-"]').forEach(btn => {
+                btn.className = "px-2 py-1 sm:px-3 sm:py-1.5 rounded-md sm:rounded-lg font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-all shrink-0";
+            });
+            const activeBtn = document.getElementById(`btn-temp-${temp.toString().toLowerCase() === 'todas' ? 'todas' : temp}`);
+            if (activeBtn) activeBtn.className = "px-2 py-1 sm:px-3 sm:py-1.5 rounded-md sm:rounded-lg font-black text-white bg-pink-600 shadow-sm transition-all shrink-0";
+            
+            displayLimit = 12;
+            applyFiltersAndSearch();
+        }
+
+        function filterByCategoria(cat) {
+            activeCategoria = cat;
+            document.querySelectorAll('[id^="btn-cat-"]').forEach(btn => {
+                btn.className = "px-2 py-1 sm:px-3 sm:py-1.5 rounded-md sm:rounded-lg font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-all shrink-0";
+            });
+            const activeBtn = document.getElementById(`btn-cat-${cat.toString().toLowerCase() === 'todas' ? 'todas' : cat}`);
+            if (activeBtn) activeBtn.className = "px-2 py-1 sm:px-3 sm:py-1.5 rounded-md sm:rounded-lg font-black text-white bg-pink-600 shadow-sm transition-all shrink-0";
+            
+            displayLimit = 12;
+            applyFiltersAndSearch();
+        }
+
+        function filterBySubcategoria(subcat) {
+            activeSubcategoria = subcat;
+            document.querySelectorAll('[id^="btn-subcat-"]').forEach(btn => {
+                btn.className = "px-2 py-1 sm:px-3 sm:py-1.5 rounded-md sm:rounded-lg font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-all shrink-0";
+            });
+            const activeBtn = document.getElementById(`btn-subcat-${subcat.toString().toLowerCase() === 'todas' ? 'todas' : subcat}`);
+            if (activeBtn) activeBtn.className = "px-2 py-1 sm:px-3 sm:py-1.5 rounded-md sm:rounded-lg font-black text-white bg-pink-600 shadow-sm transition-all shrink-0";
+            
+            displayLimit = 12;
+            applyFiltersAndSearch();
+        }
+
+        function handleSmartSearch() {
+            displayLimit = 12;
+            applyFiltersAndSearch();
+        }
+
+        function getLevenshteinDistance(a, b) {
+            if (a.length === 0) return b.length;
+            if (b.length === 0) return a.length;
+            const matrix = [];
+            for (let i = 0; i <= b.length; i++) { matrix[i] = [i]; }
+            for (let j = 0; j <= a.length; j++) { matrix[0][j] = j; }
+            for (let i = 1; i <= b.length; i++) {
+                for (let j = 1; j <= a.length; j++) {
+                    if (b.charAt(i - 1) === a.charAt(j - 1)) {
+                        matrix[i][j] = matrix[i - 1][j - 1];
+                    } else {
+                        matrix[i][j] = Math.min(
+                            matrix[i - 1][j - 1] + 1,
+                            Math.min(matrix[i][j - 1] + 1, matrix[i - 1][j] + 1)
+                        );
+                    }
+                }
+            }
+            return matrix[b.length][a.length];
+        }
+
+        function matchesSearchQuery(product, query) {
+            if (!query) return true;
+            const cleanQuery = query.toLowerCase().trim();
+            const fullText = `${product.nombre} ${product.categoria} ${product.subcategoria} ${product.descripcion} ${product.mundo} ${product.temporada}`.toLowerCase();
+            
+            if (fullText.includes(cleanQuery)) return true;
+
+            const queryWords = cleanQuery.split(/\s+/).filter(Boolean);
+            const productWords = fullText.split(/[\s,\.-]+/).filter(Boolean);
+
+            return queryWords.every(qWord => {
+                if (qWord.length <= 2) {
+                    return productWords.some(pWord => pWord.includes(qWord));
+                }
+                return productWords.some(pWord => {
+                    if (pWord.includes(qWord) || qWord.includes(pWord)) return true;
+                    const maxAllowedDist = qWord.length <= 4 ? 1 : 2;
+                    return getLevenshteinDistance(qWord, pWord) <= maxAllowedDist;
+                });
+            });
+        }
+
+        function applyFiltersAndSearch() {
+            const query = (document.getElementById('smart-search-input').value || '').trim();
+
+            filteredProducts = rawProducts.filter(p => {
+                const pMundo = (p.mundo || '').toString().toUpperCase().trim();
+                const pTemp = (p.temporada || '').toString().toUpperCase().trim();
+                const pCat = (p.categoria || '').toString().toUpperCase().trim();
+                const pSubcat = (p.subcategoria || '').toString().toUpperCase().trim();
+
+                const matchMundo = activeMundo === 'TODOS' || pMundo === activeMundo.toString().toUpperCase().trim();
+                const matchTemp = activeTemporada === 'TODAS' || pTemp === activeTemporada.toString().toUpperCase().trim();
+                const matchCat = activeCategoria === 'TODAS' || pCat === activeCategoria.toString().toUpperCase().trim();
+                const matchSubcat = activeSubcategoria === 'TODAS' || pSubcat === activeSubcategoria.toString().toUpperCase().trim();
+                
+                if (!matchMundo || !matchTemp || !matchCat || !matchSubcat) return false;
+                if (!query) return true;
+
+                return matchesSearchQuery(p, query);
+            });
+
+            renderProductsGrid();
+        }
+
+        function renderProductsGrid() {
+            const grid = document.getElementById('products-grid');
+            grid.innerHTML = '';
+
+            const statusContainer = document.getElementById('scroll-status-container');
+            const loadingMsg = document.getElementById('scroll-loading-msg');
+            const endMsg = document.getElementById('scroll-end-msg');
+
+            if (filteredProducts.length === 0) {
+                grid.innerHTML = `<div class="col-span-full py-16 text-center text-slate-400 font-semibold">No hay productos registrados en esta sección o con coincidencia para tu búsqueda.</div>`;
+                statusContainer.classList.add('hidden');
+                return;
+            }
+
+            const productsToShow = filteredProducts.slice(0, displayLimit);
+
+            productsToShow.forEach(prod => {
+                const isFav = favorites.some(f => f.id === prod.id);
+                const mainFoto = prod.fotos && prod.fotos.length > 0 ? prod.fotos[0] : 'https://via.placeholder.com/400x400?text=Cupissa';
+
+                const card = document.createElement('div');
+                card.className = "bg-white rounded-2xl sm:rounded-3xl overflow-hidden border border-slate-100 shadow-sm hover:shadow-md transition-all flex flex-col justify-between group";
+                card.innerHTML = `
+                    <div>
+                        <div class="relative bg-slate-100 aspect-square overflow-hidden">
+                            <img src="${mainFoto}" alt="${prod.nombre} - CUPISSA Colombia" title="${prod.nombre} - CUPISSA" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                            <div class="absolute top-2 left-2 sm:top-3 sm:left-3 flex flex-col gap-1 items-start">
+                                ${prod.temporada ? `<span class="bg-pink-600 text-white font-black text-[8px] sm:text-[9px] uppercase tracking-wider px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full shadow-sm">${prod.temporada}</span>` : ''}
+                            </div>
+                            <button onclick="toggleFavorite('${prod.id}', event)" class="absolute top-2 right-2 sm:top-3 sm:right-3 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/80 backdrop-blur-md text-slate-400 hover:text-pink-600 flex items-center justify-center transition-colors shadow-sm">
+                                <i class="${isFav ? 'fa-solid fa-heart text-pink-600 text-xs sm:text-sm' : 'fa-regular fa-heart text-xs sm:text-sm'}"></i>
+                            </button>
+                        </div>
+                        <div class="p-2.5 sm:p-4 space-y-1 sm:space-y-2">
+                            <span class="text-[9px] sm:text-[10px] font-black uppercase text-pink-600 tracking-wider">${prod.subcategoria || prod.categoria || 'TEXTIL'}</span>
+                            <h3 class="font-extrabold text-slate-900 text-xs sm:text-sm uppercase tracking-tight line-clamp-1">${prod.nombre}</h3>
+                        </div>
+                    </div>
+                    <div class="p-2.5 sm:p-4 pt-0 flex flex-col sm:flex-row sm:items-center justify-between border-t border-slate-50 mt-1 sm:mt-2 gap-1.5 sm:gap-2">
+                        <div>
+                            <span class="text-[8px] sm:text-[10px] text-slate-400 block font-semibold">Precio Base</span>
+                            <span class="font-black text-slate-900 text-xs sm:text-base">${formatCOP(prod.precio_detal)}</span>
+                        </div>
+                        <button onclick="openOptionsModal('${prod.id}')" class="w-full sm:w-auto px-2.5 py-1.5 sm:px-4 sm:py-2 fuchsia-btn font-extrabold rounded-lg sm:rounded-2xl text-[10px] sm:text-xs shadow-md transition-all flex items-center justify-center space-x-1 sm:space-x-1.5">
+                            <i class="fa-solid fa-bag-shopping text-[9px] sm:text-[10px]"></i>
+                            <span>Ver Op.</span>
+                        </button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+
+            statusContainer.classList.remove('hidden');
+            loadingMsg.classList.add('hidden');
+
+            if (displayLimit >= filteredProducts.length) {
+                endMsg.classList.remove('hidden');
+            } else {
+                endMsg.classList.add('hidden');
+            }
+        }
+
+        function openOptionsModal(prodId) {
+            const prod = rawProducts.find(p => p.id === prodId);
+            if (!prod) return;
+
+            selectedProductModal = prod;
+            selectedQtyModal = 1;
+            activePhotoIndex = 0;
+
+            const wrapperModalidad = document.getElementById('wrapper-modalidad');
+            if (prod.alquiler && prod.precio_alquiler > 0) {
+                wrapperModalidad.classList.remove('hidden');
+                selectedModalidad = prod.venta ? 'venta' : 'alquiler';
+            } else {
+                wrapperModalidad.classList.add('hidden');
+                selectedModalidad = 'venta';
+            }
+
+            updateModalidadUI();
+
+            document.getElementById('opt-modal-title').innerText = prod.nombre;
+            document.getElementById('opt-modal-subcat').innerText = prod.subcategoria || prod.categoria || 'TEXTIL';
+            document.getElementById('opt-modal-ref').innerText = `Ref: CUP-${prod.id.toString().slice(-4)}`;
+
+            const wrapDesc = document.getElementById('wrapper-descripcion');
+            const txtDesc = document.getElementById('opt-modal-desc');
+            if (prod.descripcion && prod.descripcion.trim() !== '') {
+                txtDesc.innerText = prod.descripcion;
+                wrapDesc.classList.remove('hidden');
+            } else {
+                wrapDesc.classList.add('hidden');
+            }
+
+            const badgesContainer = document.getElementById('opt-modal-badges');
+            badgesContainer.innerHTML = '';
+            if (prod.subcategoria) badgesContainer.innerHTML += `<span class="bg-pink-600 text-white font-black text-[9px] uppercase px-2.5 py-1 rounded-full">${prod.subcategoria}</span>`;
+
+            const mainImg = document.getElementById('opt-modal-img');
+            const fotos = prod.fotos && prod.fotos.length > 0 ? prod.fotos : ['https://via.placeholder.com/400x400?text=Cupissa'];
+            mainImg.src = fotos[0];
+            mainImg.alt = `${prod.nombre} - CUPISSA`;
+            mainImg.title = `${prod.nombre} - CUPISSA`;
+
+            const thumbsContainer = document.getElementById('opt-modal-thumbs');
+            thumbsContainer.innerHTML = '';
+            if (fotos.length > 1) {
+                fotos.forEach((url, idx) => {
+                    const thumb = document.createElement('img');
+                    thumb.src = url;
+                    thumb.alt = `${prod.nombre} vista ${idx+1} - CUPISSA`;
+                    thumb.title = `${prod.nombre} vista ${idx+1}`;
+                    thumb.className = `w-12 h-12 object-cover rounded-xl border-2 cursor-pointer ${idx === 0 ? 'fuchsia-border' : 'border-transparent'}`;
+                    thumb.onclick = () => {
+                        activePhotoIndex = idx;
+                        mainImg.src = url;
+                        document.querySelectorAll('#opt-modal-thumbs img').forEach(t => t.className = 'w-12 h-12 object-cover rounded-xl border-2 border-transparent');
+                        thumb.className = 'w-12 h-12 object-cover rounded-xl border-2 fuchsia-border';
+                    };
+                    thumbsContainer.appendChild(thumb);
+                });
+            }
+
+            const wrapTallas = document.getElementById('wrapper-tallas');
+            const selectTalla = document.getElementById('opt-select-talla');
+            selectTalla.innerHTML = '';
+            if (prod.tallas && prod.tallas.length > 0) {
+                prod.tallas.forEach(t => {
+                    const opt = document.createElement('option');
+                    opt.value = t.nombre;
+                    opt.dataset.inc = t.incremento || 0;
+                    opt.innerText = t.incremento > 0 ? `${t.nombre} (+${formatCOP(t.incremento)})` : t.nombre;
+                    selectTalla.appendChild(opt);
+                });
+                wrapTallas.classList.remove('hidden');
+            } else {
+                wrapTallas.classList.add('hidden');
+            }
+
+            const wrapColores = document.getElementById('wrapper-colores');
+            const selectColor = document.getElementById('opt-select-color');
+            selectColor.innerHTML = '';
+            if (prod.colores && prod.colores.length > 0) {
+                prod.colores.forEach(c => {
+                    const opt = document.createElement('option');
+                    opt.value = c.nombre;
+                    opt.dataset.inc = c.incremento || 0;
+                    opt.innerText = c.incremento > 0 ? `${c.nombre} (+${formatCOP(c.incremento)})` : c.nombre;
+                    selectColor.appendChild(opt);
+                });
+                wrapColores.classList.remove('hidden');
+            } else {
+                wrapColores.classList.add('hidden');
+            }
+
+            const wrapCustom = document.getElementById('wrapper-custom');
+            document.getElementById('opt-input-custom').value = '';
+            if (prod.personalizable) wrapCustom.classList.remove('hidden');
+            else wrapCustom.classList.add('hidden');
+
+            recalculateProductPrice();
+            document.getElementById('modal-product-options').classList.remove('hidden');
+        }
+
+        function openFullImageModal() {
+            if (!selectedProductModal) return;
+            const originals = selectedProductModal.fotos_originales || selectedProductModal.fotos || [];
+            const srcOriginal = originals[activePhotoIndex] || originals[0] || 'https://via.placeholder.com/800x800?text=Cupissa';
+            const fullImg = document.getElementById('full-modal-img');
+            fullImg.src = srcOriginal;
+            fullImg.alt = `${selectedProductModal.nombre} - Foto completa - CUPISSA`;
+            document.getElementById('modal-full-image').classList.remove('hidden');
+        }
+
+        function closeFullImageModal() {
+            document.getElementById('modal-full-image').classList.add('hidden');
+        }
+
+        function setModalidad(mod) {
+            selectedModalidad = mod;
+            updateModalidadUI();
+            recalculateProductPrice();
+        }
+
+        function updateModalidadUI() {
+            const lblVenta = document.getElementById('lbl-mod-venta');
+            const lblAlquiler = document.getElementById('lbl-mod-alquiler');
+            
+            if (selectedModalidad === 'venta') {
+                lblVenta.className = "flex items-center justify-center space-x-2 p-2.5 rounded-xl border-2 fuchsia-border bg-pink-50/20 cursor-pointer text-xs font-bold fuchsia-text";
+                lblAlquiler.className = "flex items-center justify-center space-x-2 p-2.5 rounded-xl border-2 border-slate-200 bg-white cursor-pointer text-xs font-bold text-slate-600";
+                document.querySelector('input[name="modalidadProd"][value="venta"]').checked = true;
+            } else {
+                lblAlquiler.className = "flex items-center justify-center space-x-2 p-2.5 rounded-xl border-2 fuchsia-border bg-pink-50/20 cursor-pointer text-xs font-bold fuchsia-text";
+                lblVenta.className = "flex items-center justify-center space-x-2 p-2.5 rounded-xl border-2 border-slate-200 bg-white cursor-pointer text-xs font-bold text-slate-600";
+                document.querySelector('input[name="modalidadProd"][value="alquiler"]').checked = true;
+            }
+        }
+
+        function closeOptionsModal() {
+            document.getElementById('modal-product-options').classList.add('hidden');
+        }
+
+        function updateModalQty(delta) {
+            selectedQtyModal = Math.max(1, selectedQtyModal + delta);
+            document.getElementById('opt-modal-qty').innerText = selectedQtyModal;
+            recalculateProductPrice();
+        }
+
+        function recalculateProductPrice() {
+            if (!selectedProductModal) return;
+            const p = selectedProductModal;
+
+            let unitPrice = selectedModalidad === 'alquiler' ? (p.precio_alquiler || 0) : p.precio_detal;
+            let isMayorista = false;
+
+            if (selectedModalidad === 'venta' && p.cant_min_mayorista && selectedQtyModal >= p.cant_min_mayorista && p.precio_mayorista) {
+                unitPrice = p.precio_mayorista;
+                isMayorista = true;
+            }
+
+            const selectTalla = document.getElementById('opt-select-talla');
+            if (selectTalla && selectTalla.selectedOptions[0]) unitPrice += parseFloat(selectTalla.selectedOptions[0].dataset.inc || 0);
+
+            const selectColor = document.getElementById('opt-select-color');
+            if (selectColor && selectColor.selectedOptions[0]) unitPrice += parseFloat(selectColor.selectedOptions[0].dataset.inc || 0);
+
+            const totalProduct = unitPrice * selectedQtyModal;
+            const pctAnticipo = p.porcentaje_anticipo || 20;
+            const valAnticipo = Math.round(totalProduct * (pctAnticipo / 100));
+
+            const depInfo = document.getElementById('wrapper-deposito-info');
+            if (selectedModalidad === 'alquiler' && p.valor_deposito > 0) {
+                document.getElementById('opt-val-deposito').innerText = formatCOP(p.valor_deposito * selectedQtyModal);
+                depInfo.classList.remove('hidden');
+            } else {
+                depInfo.classList.add('hidden');
+            }
+
+            document.getElementById('opt-price-tag').innerText = selectedModalidad === 'alquiler' ? 'Precio Alquiler' : (isMayorista ? 'Precio Mayorista' : 'Precio Detal');
+            document.getElementById('opt-modal-total-price').innerText = formatCOP(totalProduct);
+            document.getElementById('opt-anticipo-pct').innerText = pctAnticipo;
+            document.getElementById('opt-anticipo-val').innerText = formatCOP(valAnticipo);
+        }
+
+        function addModalProductToCart() {
+            if (!selectedProductModal) return;
+
+            const selectTalla = document.getElementById('opt-select-talla');
+            const selectColor = document.getElementById('opt-select-color');
+            const inputCustom = document.getElementById('opt-input-custom');
+
+            const talla = selectTalla && selectTalla.value ? selectTalla.value : null;
+            const color = selectColor && selectColor.value ? selectColor.value : null;
+            const customText = inputCustom ? inputCustom.value.trim() : '';
+
+            let unitPrice = selectedModalidad === 'alquiler' ? (selectedProductModal.precio_alquiler || 0) : selectedProductModal.precio_detal;
+            if (selectedModalidad === 'venta' && selectedProductModal.cant_min_mayorista && selectedQtyModal >= selectedProductModal.cant_min_mayorista && selectedProductModal.precio_mayorista) {
+                unitPrice = selectedProductModal.precio_mayorista;
+            }
+
+            if (selectTalla && selectTalla.selectedOptions[0]) unitPrice += parseFloat(selectTalla.selectedOptions[0].dataset.inc || 0);
+            if (selectColor && selectColor.selectedOptions[0]) unitPrice += parseFloat(selectColor.selectedOptions[0].dataset.inc || 0);
+
+            const cartItem = {
+                cartId: `${selectedProductModal.id}_${Date.now()}`,
+                productId: selectedProductModal.id,
+                nombre: selectedProductModal.nombre,
+                modalidad: selectedModalidad.toUpperCase(),
+                foto: selectedProductModal.fotos && selectedProductModal.fotos[0] ? selectedProductModal.fotos[0] : '',
+                talla,
+                color,
+                customText,
+                cantidad: selectedQtyModal,
+                precioUnitario: unitPrice,
+                total: unitPrice * selectedQtyModal,
+                deposito: selectedModalidad === 'alquiler' ? (selectedProductModal.valor_deposito || 0) * selectedQtyModal : 0,
+                porcentajeAnticipo: selectedProductModal.porcentaje_anticipo || 20,
+                valorAnticipo: Math.round((unitPrice * selectedQtyModal) * ((selectedProductModal.porcentaje_anticipo || 20) / 100))
+            };
+
+            cart.push(cartItem);
+            saveCart();
+            closeOptionsModal();
+            openCartModal();
+        }
+
+        function saveCart() {
+            localStorage.setItem('cupissa_cart', JSON.stringify(cart));
+            updateBadges();
+        }
+
+        function saveFavorites() {
+            localStorage.setItem('cupissa_favs', JSON.stringify(favorites));
+            updateBadges();
+            applyFiltersAndSearch();
+        }
+
+        function updateBadges() {
+            document.getElementById('cart-badge-count').innerText = cart.reduce((acc, c) => acc + c.cantidad, 0);
+            document.getElementById('fav-badge-count').innerText = favorites.length;
+        }
+
+        function toggleFavorite(prodId, e) {
+            if (e) e.stopPropagation();
+            const prod = rawProducts.find(p => p.id === prodId);
+            if (!prod) return;
+            const idx = favorites.findIndex(f => f.id === prodId);
+            if (idx >= 0) favorites.splice(idx, 1);
+            else favorites.push(prod);
+            saveFavorites();
+        }
+
+        function toggleFavoriteCurrent() {
+            if (selectedProductModal) {
+                toggleFavorite(selectedProductModal.id);
+                const isFav = favorites.some(f => f.id === selectedProductModal.id);
+                document.getElementById('btn-modal-fav').innerHTML = `<i class="${isFav ? 'fa-solid fa-heart text-pink-600' : 'fa-regular fa-heart'} text-xl"></i>`;
+            }
+        }
+
+        function openCartModal() {
+            renderCartItems();
+            document.getElementById('modal-cart').classList.remove('hidden');
+        }
+
+        function closeCartModal() {
+            document.getElementById('modal-cart').classList.add('hidden');
+        }
+
+        function renderCartItems() {
+            const container = document.getElementById('cart-items-container');
+            container.innerHTML = '';
+            let grandTotal = 0;
+            let grandAnticipo = 0;
+
+            if (cart.length === 0) {
+                container.innerHTML = `<div class="p-8 text-center text-slate-400 font-medium">Tu carrito está vacío.</div>`;
+                document.getElementById('cart-total-amount').innerText = '$ 0';
+                document.getElementById('cart-total-anticipo').innerText = '$ 0';
+                return;
+            }
+
+            cart.forEach((item, index) => {
+                grandTotal += item.total;
+                grandAnticipo += item.valorAnticipo;
+
+                const card = document.createElement('div');
+                card.className = "flex items-center space-x-3 bg-slate-50 p-3 rounded-2xl border border-slate-100 text-xs";
+                card.innerHTML = `
+                    <img src="${item.foto}" alt="${item.nombre} - CUPISSA" class="w-14 h-14 object-cover rounded-xl">
+                    <div class="flex-1">
+                        <h4 class="font-extrabold text-slate-900 uppercase">${item.nombre} <span class="text-[9px] bg-pink-100 fuchsia-text px-1.5 py-0.5 rounded">${item.modalidad}</span></h4>
+                        <div class="text-[10px] text-slate-500 font-semibold space-x-1">
+                            ${item.talla ? `<span>Talla: ${item.talla}</span>` : ''}
+                            ${item.color ? `<span>Color: ${item.color}</span>` : ''}
+                        </div>
+                        <div class="font-bold fuchsia-text mt-1">${formatCOP(item.total)} (Anticipo: ${formatCOP(item.valorAnticipo)})</div>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <span class="font-black text-slate-700">x${item.cantidad}</span>
+                        <button onclick="removeCartItem(${index})" class="text-slate-400 hover:text-red-600 p-1"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+
+            document.getElementById('cart-total-amount').innerText = formatCOP(grandTotal);
+            document.getElementById('cart-total-anticipo').innerText = formatCOP(grandAnticipo);
+        }
+
+        function removeCartItem(index) {
+            cart.splice(index, 1);
+            saveCart();
+            renderCartItems();
+        }
+
+        function openFavoritesModal() {
+            const container = document.getElementById('favorites-items-container');
+            container.innerHTML = '';
+            if (favorites.length === 0) {
+                container.innerHTML = `<div class="p-8 text-center text-slate-400 font-medium">No tienes favoritos guardados.</div>`;
+            } else {
+                favorites.forEach(prod => {
+                    const foto = prod.fotos && prod.fotos[0] ? prod.fotos[0] : '';
+                    const card = document.createElement('div');
+                    card.className = "flex items-center justify-between bg-slate-50 p-3 rounded-2xl border border-slate-100 text-xs";
+                    card.innerHTML = `
+                        <div class="flex items-center space-x-3">
+                            <img src="${foto}" alt="${prod.nombre} - CUPISSA" class="w-12 h-12 object-cover rounded-xl">
+                            <div>
+                                <h4 class="font-extrabold text-slate-900 uppercase">${prod.nombre}</h4>
+                                <span class="font-black fuchsia-text">${formatCOP(prod.precio_detal)}</span>
+                            </div>
+                        </div>
+                        <button onclick="openOptionsModal('${prod.id}'); closeFavoritesModal();" class="px-3 py-1.5 fuchsia-btn font-bold rounded-xl text-[11px]">Ver Op.</button>
+                    `;
+                    container.appendChild(card);
+                });
+            }
+            document.getElementById('modal-favorites').classList.remove('hidden');
+        }
+
+        function closeFavoritesModal() {
+            document.getElementById('modal-favorites').classList.add('hidden');
+        }
+
+        function formatCOP(val) {
+            return '$ ' + new Intl.NumberFormat('es-CO').format(val || 0);
+        }
+    </script>
+</body>
+</html>
