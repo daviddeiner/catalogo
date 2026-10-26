@@ -340,6 +340,8 @@
 
         let rawProducts = [];
         let filteredProducts = [];
+        let currentMatches = [];
+        let currentNonMatches = [];
         let displayLimit = 12;
         let isLoadingMore = false;
         let activeMundo = 'TODOS';
@@ -691,14 +693,22 @@
             });
 
             if (query) {
-                results = results.map(p => {
+                let scoredResults = results.map(p => {
                     return { product: p, score: calculateProductRelevance(p, query) };
-                })
-                .sort((a, b) => b.score - a.score)
-                .map(item => item.product);
+                });
+
+                scoredResults.sort((a, b) => b.score - a.score);
+
+                currentMatches = scoredResults.filter(item => item.score > 0).map(item => item.product);
+                currentNonMatches = scoredResults.filter(item => item.score === 0).map(item => item.product);
+
+                filteredProducts = [...currentMatches, ...currentNonMatches];
+            } else {
+                currentMatches = results;
+                currentNonMatches = [];
+                filteredProducts = results;
             }
 
-            filteredProducts = results;
             renderProductsGrid();
         }
 
@@ -717,8 +727,23 @@
             }
 
             const productsToShow = filteredProducts.slice(0, displayLimit);
+            const query = (document.getElementById('smart-search-input').value || '').trim();
 
-            productsToShow.forEach(prod => {
+            productsToShow.forEach((prod, index) => {
+                // Insertar línea separadora antes de los productos no coincidentes si hay una búsqueda activa
+                if (query && currentMatches.length > 0 && currentNonMatches.length > 0) {
+                    if (index === currentMatches.length) {
+                        const separator = document.createElement('div');
+                        separator.className = "col-span-full my-4 flex items-center justify-center";
+                        separator.innerHTML = `
+                            <div class="flex-grow border-t border-slate-300"></div>
+                            <span class="flex-shrink mx-4 text-xs font-bold uppercase tracking-wider text-slate-500 bg-slate-100 px-4 py-1.5 rounded-full shadow-xs">Mas productos del catalogo</span>
+                            <div class="flex-grow border-t border-slate-300"></div>
+                        `;
+                        grid.appendChild(separator);
+                    }
+                }
+
                 const isFav = favorites.some(f => f.id === prod.id);
                 const mainFoto = prod.fotos && prod.fotos.length > 0 ? prod.fotos[0] : 'https://via.placeholder.com/400x400?text=Cupissa';
 
